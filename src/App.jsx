@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Ticker from "./components/Ticker";
+import Trainers from "./components/Trainers";
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -13,6 +14,7 @@ function App() {
       <main>
         <Hero redRoom={redRoom} />
         <Ticker redRoom={redRoom} />
+        <Trainers redRoom={redRoom} />
       </main>
     </div>
   );
