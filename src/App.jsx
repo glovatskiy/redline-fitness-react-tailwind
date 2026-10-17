@@ -4,6 +4,7 @@ import Hero from "./components/Hero";
 import Ticker from "./components/Ticker";
 import Trainers from "./components/Trainers";
 import Classes from "./components/Classes";
+import Editorial from "./components/Editorial";
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -17,6 +18,7 @@ function App() {
         <Ticker redRoom={redRoom} />
         <Trainers redRoom={redRoom} />
         <Classes redRoom={redRoom} />
+        <Editorial redRoom={redRoom} />
       </main>
     </div>
   );
