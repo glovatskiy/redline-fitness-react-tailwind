@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Header from "./components/Header";
+import Hero from "./components/Hero";
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -8,7 +9,9 @@ function App() {
     <div className={redRoom ? "red-room" : ""}>
       <Header redRoom={redRoom} setRedRoom={setRedRoom} />
 
-      <main>{/* Next sections will go here */}</main>
+      <main>
+        <Hero redRoom={redRoom} />
+      </main>
     </div>
   );
 }

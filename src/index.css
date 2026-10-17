@@ -16,3 +16,46 @@ body {
   color: #f5f5f1;
   font-family: var(--font-body);
 }
+
+/* =========================================
+   REDLINE HERO ARROW
+========================================= */
+
+.hero-discover-arrow {
+  width: 16px;
+  height: 16px;
+  animation: heroArrowBounce 1.2s infinite;
+  transform-origin: center;
+}
+
+/* Original REDLINE animation */
+@keyframes heroArrowBounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(45deg);
+  }
+
+  65% {
+    transform: translateY(-3px) rotate(45deg);
+  }
+
+  85% {
+    transform: translateY(8px) rotate(45deg);
+  }
+}
+
+/* Neon glow on hover */
+.group:hover .hero-discover-arrow {
+  filter:
+    drop-shadow(0 0 4px #ff0000)
+    drop-shadow(0 0 10px #ff0000)
+    drop-shadow(0 0 18px rgba(255, 0, 0, 0.7));
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .hero-discover-arrow {
+    animation: none;
+    transform: rotate(45deg);
+  }
+}
