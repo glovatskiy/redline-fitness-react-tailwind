@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Bebas Neue", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --color-brand-red: #c40000;
+  --color-brand-background: #121212;
+  --color-brand-surface: #1e1e1e;
+  --color-brand-text: #f5f5f1;
+  --color-brand-muted: #a0a0a0;
+}
+
+body {
+  background-color: #121212;
+  color: #f5f5f1;
+  font-family: var(--font-body);
+}
