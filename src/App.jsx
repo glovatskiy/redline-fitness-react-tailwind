@@ -7,7 +7,7 @@ import Classes from "./components/Classes";
 import Editorial from "./components/Editorial";
 import Membership from "./components/Membership";
 import FindYourRed from "./components/FindYourRed";
-
+import Footer from "./components/Footer";
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -25,6 +25,7 @@ function App() {
         <Membership redRoom={redRoom} />
         <FindYourRed redRoom={redRoom} />
       </main>
+      <Footer redRoom={redRoom} />
     </div>
   );
 }
