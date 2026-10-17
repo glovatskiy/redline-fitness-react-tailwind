@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
+import Ticker from "./components/Ticker";
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -11,6 +12,7 @@ function App() {
 
       <main>
         <Hero redRoom={redRoom} />
+        <Ticker redRoom={redRoom} />
       </main>
     </div>
   );
