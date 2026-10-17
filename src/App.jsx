@@ -6,6 +6,8 @@ import Trainers from "./components/Trainers";
 import Classes from "./components/Classes";
 import Editorial from "./components/Editorial";
 import Membership from "./components/Membership";
+import FindYourRed from "./components/FindYourRed";
+
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -21,6 +23,7 @@ function App() {
         <Classes redRoom={redRoom} />
         <Editorial redRoom={redRoom} />
         <Membership redRoom={redRoom} />
+        <FindYourRed redRoom={redRoom} />
       </main>
     </div>
   );
