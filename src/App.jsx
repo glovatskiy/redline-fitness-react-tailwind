@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Ticker from "./components/Ticker";
 import Trainers from "./components/Trainers";
+import Classes from "./components/Classes";
 
 function App() {
   const [redRoom, setRedRoom] = useState(false);
@@ -15,6 +16,7 @@ function App() {
         <Hero redRoom={redRoom} />
         <Ticker redRoom={redRoom} />
         <Trainers redRoom={redRoom} />
+        <Classes redRoom={redRoom} />
       </main>
     </div>
   );
