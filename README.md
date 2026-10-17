@@ -22,14 +22,14 @@ This version rebuilds the original HTML/CSS website using a component-based Reac
   <tr>
     <td align="center" valign="top">
       <img
-        src="./assets/images/redline-fitness.png"
+        src="./src/assets/images/redline-fitness.png"
         alt="REDLINE Fitness React website — Default Mode"
         width="100%"
       />
     </td>
     <td align="center" valign="top">
       <img
-        src="./assets/images/redline-fitness-redroom-mode.png"
+        src="./src/assets/images/redline-fitness-redroom-mode.png"
         alt="REDLINE Fitness React website — RED ROOM Mode"
         width="100%"
       />
