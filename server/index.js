@@ -3,15 +3,36 @@ const cors = require("cors");
 const { eq, and } = require("drizzle-orm");
 require("dotenv").config();
 
+// Database connection and schema
 const { db } = require("./db");
 const { classes } = require("./db/schema");
+
+// PostgreSQL-backed authentication sessions
+const sessionMiddleware = require("./db/session");
+
+// Authentication routes (signup, login, logout)
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware: allow requests from React and parse JSON request bodies
-app.use(cors({ origin: "http://localhost:5173" }));
+// Middleware: allow requests from the React frontend
+// credentials: true allows the browser to send session cookies
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
+
+// Middleware: parse incoming JSON request bodies
 app.use(express.json());
+
+// Middleware: enable persistent login sessions
+app.use(sessionMiddleware);
+
+// Authentication API: routes defined in routes/auth.js
+app.use("/api/auth", authRoutes);
 
 // Health check: verify that the Express server is running
 app.get("/api/health", (req, res) => {
@@ -24,7 +45,7 @@ app.get("/api/health", (req, res) => {
 // GET /api/classes: retrieve fitness classes from Neon PostgreSQL
 app.get("/api/classes", async (req, res) => {
   try {
-    // Read optional filters from the URL query parameters
+    // Read optional filters from URL query parameters
     const { day, intensity } = req.query;
     const conditions = [];
 
@@ -47,7 +68,7 @@ app.get("/api/classes", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    // Return an HTTP 500 response if the database query fails
+    // Return HTTP 500 if the database query fails
     console.error("Failed to fetch classes:", error);
     res.status(500).json({ error: "Failed to fetch classes" });
   }
