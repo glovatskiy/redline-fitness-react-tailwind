@@ -1,106 +1,4 @@
-import { useState } from "react";
-
-// Class schedule data
-const classes = [
-  {
-    id: 1,
-    name: "POWER HOUR",
-    time: "06:00 AM",
-    day: "MON",
-    intensity: "INTENSE",
-    spots: 8,
-  },
-  {
-    id: 2,
-    name: "REDLINE CIRCUIT",
-    time: "08:00 AM",
-    day: "MON",
-    intensity: "INTERMEDIATE",
-    spots: 4,
-  },
-  {
-    id: 3,
-    name: "ELITE STRENGTH",
-    time: "10:30 AM",
-    day: "MON",
-    intensity: "INTENSE",
-    spots: 0,
-  },
-  {
-    id: 4,
-    name: "HIIT BLAST",
-    time: "05:00 PM",
-    day: "MON",
-    intensity: "INTENSE",
-    spots: 12,
-  },
-  {
-    id: 5,
-    name: "RECOVERY FLOW",
-    time: "06:30 PM",
-    day: "MON",
-    intensity: "BEGINNER",
-    spots: 15,
-  },
-  {
-    id: 6,
-    name: "LATE STRENGTH",
-    time: "07:45 PM",
-    day: "MON",
-    intensity: "INTERMEDIATE",
-    spots: 2,
-  },
-
-  // Sample Tuesday schedule
-  {
-    id: 7,
-    name: "MORNING MOBILITY",
-    time: "07:00 AM",
-    day: "TUE",
-    intensity: "BEGINNER",
-    spots: 10,
-  },
-  {
-    id: 8,
-    name: "REDLINE CIRCUIT",
-    time: "09:00 AM",
-    day: "TUE",
-    intensity: "INTERMEDIATE",
-    spots: 6,
-  },
-  {
-    id: 9,
-    name: "HIIT BLAST",
-    time: "12:00 PM",
-    day: "TUE",
-    intensity: "INTENSE",
-    spots: 5,
-  },
-  {
-    id: 10,
-    name: "STRENGTH FOUNDATIONS",
-    time: "04:00 PM",
-    day: "TUE",
-    intensity: "BEGINNER",
-    spots: 12,
-  },
-  {
-    id: 11,
-    name: "POWER HOUR",
-    time: "06:00 PM",
-    day: "TUE",
-    intensity: "INTENSE",
-    spots: 3,
-  },
-  {
-    id: 12,
-    name: "EVENING CONDITIONING",
-    time: "08:00 PM",
-    day: "TUE",
-    intensity: "INTERMEDIATE",
-    spots: 0,
-  },
-];
+import { useState, useEffect } from "react";
 
 const intensityOptions = ["ALL", "BEGINNER", "INTERMEDIATE", "INTENSE"];
 
@@ -108,7 +6,48 @@ function Classes({ redRoom }) {
   const [day, setDay] = useState("MON");
   const [filter, setFilter] = useState("ALL");
 
-  // Filter classes by selected day and intensity
+  // Classes retrieved from the PostgreSQL database
+  const [classes, setClasses] = useState([]);
+
+  // Track API loading and errors
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch classes from the Express API when the component mounts
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchClasses() {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/classes`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load classes");
+        }
+
+        const data = await response.json();
+        setClasses(data);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchClasses();
+
+    // Cancel the request when the component unmounts
+    return () => controller.abort();
+  }, []);
+
+  // Filter database classes by selected day and intensity
   const dayClasses = classes.filter((item) => item.day === day);
 
   const filteredClasses =
@@ -244,134 +183,149 @@ function Classes({ redRoom }) {
         })}
       </div>
 
+      {/* LOADING AND ERROR STATES */}
+      {loading && (
+        <p className="py-12 text-center text-sm text-[#a0a0a0]">
+          Loading classes...
+        </p>
+      )}
+
+      {error && (
+        <p role="alert" className="py-12 text-center text-sm text-[#ff0000]">
+          Unable to load classes. Please try again later.
+        </p>
+      )}
+
       {/* CLASSES GRID */}
-      <div
-        className="
-          grid grid-cols-1 gap-4
-          md:grid-cols-2
-          lg:grid-cols-3 lg:gap-6
-        "
-      >
-        {filteredClasses.map((item) => {
-          const isFull = item.spots === 0;
+      {!loading && !error && (
+        <div
+          className="
+            grid grid-cols-1 gap-4
+            md:grid-cols-2
+            lg:grid-cols-3 lg:gap-6
+          "
+        >
+          {filteredClasses.map((item) => {
+            const isFull = item.spots === 0;
 
-          return (
-            <article
-              key={item.id}
-              className={`
-                flex min-h-[210px] min-w-0
-                flex-col justify-between
-                border border-white/5 p-6
-                transition-[border-color,background-color] duration-300
-                md:p-6 lg:p-8
-                ${redRoom ? "bg-[#0a0000]" : "bg-[#121212]"}
-                ${
-                  isFull
-                    ? "opacity-75 hover:border-[#444]"
-                    : redRoom
-                      ? "hover:border-[#ff0000]"
-                      : "hover:border-[#c40000]"
-                }
-              `}
-            >
-              {/* CARD TOP */}
-              <div
-                className="
-                  mb-6 flex flex-wrap items-start
-                  justify-between gap-3
-                  lg:mb-10
-                "
+            return (
+              <article
+                key={item.id}
+                className={`
+                  flex min-h-[210px] min-w-0
+                  flex-col justify-between
+                  border border-white/5 p-6
+                  transition-[border-color,background-color] duration-300
+                  md:p-6 lg:p-8
+                  ${redRoom ? "bg-[#0a0000]" : "bg-[#121212]"}
+                  ${
+                    isFull
+                      ? "opacity-75 hover:border-[#444]"
+                      : redRoom
+                        ? "hover:border-[#ff0000]"
+                        : "hover:border-[#c40000]"
+                  }
+                `}
               >
-                <div className="min-w-0">
-                  <p
-                    className="
-                      mb-2 font-body text-xs font-medium
-                      tracking-[1px] text-[#a0a0a0]
-                      lg:tracking-[2px]
-                    "
-                  >
-                    {item.time} — {item.day}
-                  </p>
-
-                  <h3
-                    className="
-                      font-heading text-2xl font-normal leading-none
-                      lg:text-4xl
-                    "
-                  >
-                    {item.name}
-                  </h3>
-                </div>
-
-                {/* INTENSITY BADGE */}
-                <span
-                  className={`
-                    shrink-0 border px-2 py-1
-                    font-body text-[10px] font-bold tracking-[1px]
-                    lg:px-3 lg:py-1.5
-                    ${
-                      isFull
-                        ? "border-white/10 bg-[#262626] text-[#a0a0a0]"
-                        : item.intensity === "BEGINNER" && !redRoom
-                          ? "border-white/20 bg-white/10 text-white"
-                          : redRoom
-                            ? "border-[#ff0000]/20 bg-[#ff0000]/10 text-[#ff0000]"
-                            : "border-[#c40000]/20 bg-[#c40000]/10 text-[#c40000]"
-                    }
-                  `}
+                {/* CARD TOP */}
+                <div
+                  className="
+                    mb-6 flex flex-wrap items-start
+                    justify-between gap-3
+                    lg:mb-10
+                  "
                 >
-                  {isFull ? "FULL" : item.intensity}
-                </span>
-              </div>
+                  <div className="min-w-0">
+                    <p
+                      className="
+                        mb-2 font-body text-xs font-medium
+                        tracking-[1px] text-[#a0a0a0]
+                        lg:tracking-[2px]
+                      "
+                    >
+                      {item.time} — {item.day}
+                    </p>
 
-              {/* CARD BOTTOM */}
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-sm text-[#a0a0a0]">
-                  <i
-                    aria-hidden="true"
+                    <h3
+                      className="
+                        font-heading text-2xl font-normal leading-none
+                        lg:text-4xl
+                      "
+                    >
+                      {item.name}
+                    </h3>
+                  </div>
+
+                  {/* INTENSITY BADGE */}
+                  <span
                     className={`
-                      fa-solid
-                      ${isFull ? "fa-circle-info" : "fa-user-group"}
-                      ${isFull ? "text-[#a0a0a0]" : accentColor}
+                      shrink-0 border px-2 py-1
+                      font-body text-[10px] font-bold tracking-[1px]
+                      lg:px-3 lg:py-1.5
+                      ${
+                        isFull
+                          ? "border-white/10 bg-[#262626] text-[#a0a0a0]"
+                          : item.intensity === "BEGINNER" && !redRoom
+                            ? "border-white/20 bg-white/10 text-white"
+                            : redRoom
+                              ? "border-[#ff0000]/20 bg-[#ff0000]/10 text-[#ff0000]"
+                              : "border-[#c40000]/20 bg-[#c40000]/10 text-[#c40000]"
+                      }
                     `}
-                  />
-
-                  <span>
-                    {isFull ? "Waitlist Open" : `${item.spots} spots left`}
+                  >
+                    {isFull ? "FULL" : item.intensity}
                   </span>
                 </div>
 
-                <a
-                  href="#membership"
-                  className={`
-                    border-b pb-1
-                    font-body text-xs font-bold tracking-[2px]
-                    transition-colors duration-300
-                    ${
-                      isFull
-                        ? "border-[#555] text-[#a0a0a0]"
-                        : `
-                          text-[#f5f5f1]
-                          ${accentBorder}
-                          ${
-                            redRoom
-                              ? "hover:text-[#ff0000]"
-                              : "hover:text-[#c40000]"
-                          }
-                        `
-                    }
-                  `}
-                >
-                  {isFull ? "WAITLIST" : "BOOK"}
-                </a>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+                {/* CARD BOTTOM */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm text-[#a0a0a0]">
+                    <i
+                      aria-hidden="true"
+                      className={`
+                        fa-solid
+                        ${isFull ? "fa-circle-info" : "fa-user-group"}
+                        ${isFull ? "text-[#a0a0a0]" : accentColor}
+                      `}
+                    />
+
+                    <span>
+                      {isFull ? "Waitlist Open" : `${item.spots} spots left`}
+                    </span>
+                  </div>
+
+                  <a
+                    href="#membership"
+                    className={`
+                      border-b pb-1
+                      font-body text-xs font-bold tracking-[2px]
+                      transition-colors duration-300
+                      ${
+                        isFull
+                          ? "border-[#555] text-[#a0a0a0]"
+                          : `
+                            text-[#f5f5f1]
+                            ${accentBorder}
+                            ${
+                              redRoom
+                                ? "hover:text-[#ff0000]"
+                                : "hover:text-[#c40000]"
+                            }
+                          `
+                      }
+                    `}
+                  >
+                    {isFull ? "WAITLIST" : "BOOK"}
+                  </a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       {/* EMPTY STATE */}
-      {filteredClasses.length === 0 && (
+      {!loading && !error && filteredClasses.length === 0 && (
         <p className="py-12 text-center text-sm text-[#a0a0a0]">
           No classes match this intensity.
         </p>
