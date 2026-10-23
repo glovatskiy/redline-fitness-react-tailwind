@@ -5,10 +5,12 @@ const { Pool } = require("pg");
 // PostgreSQL session store for express-session
 const PgSession = connectPgSimple(session);
 
-// Store login sessions in the same Neon PostgreSQL database
+// Store login sessions in Neon PostgreSQL
 const sessionPool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const sessionMiddleware = session({
   store: new PgSession({
@@ -26,10 +28,13 @@ const sessionMiddleware = session({
   // Don't create sessions for unauthenticated visitors
   saveUninitialized: false,
 
+  // Trust Render's HTTPS reverse proxy in production
+  proxy: isProduction,
+
   cookie: {
-    httpOnly: true, // JavaScript cannot read the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   },
 });

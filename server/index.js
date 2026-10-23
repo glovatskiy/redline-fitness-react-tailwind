@@ -18,9 +18,13 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware: allow requests from the React frontend
 // credentials: true allows the browser to send session cookies
+// Allow requests from local development and the deployed frontend
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://redline-fitness-react-tailwind.vercel.app",
+    ],
     credentials: true,
   }),
 );
