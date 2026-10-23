@@ -1,12 +1,19 @@
 import { useState } from "react";
 
-function Header({ redRoom, setRedRoom }) {
+function Header({
+  redRoom,
+  setRedRoom,
+  user,
+  authLoading,
+  onOpenAuth,
+  onLogout,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="fixed top-0 left-0 z-50 flex h-16 w-full items-center justify-between gap-2 bg-[#121212]/95 px-3 text-[#f5f5f1] transition-colors duration-300 lg:h-20 lg:px-12">
+    <header className="fixed top-0 left-0 z-50 flex h-16 w-full items-center justify-between gap-3 bg-[#121212]/95 px-3 text-[#f5f5f1] transition-colors duration-300 lg:h-20 lg:gap-6 lg:px-12">
       {/* Logo */}
       <a
         href="#"
@@ -25,7 +32,7 @@ function Header({ redRoom, setRedRoom }) {
       </a>
 
       {/* Navigation and RED ROOM */}
-      <div className="ml-auto flex items-center gap-1 lg:gap-12">
+      <div className="ml-auto flex min-w-0 items-center gap-3 lg:gap-8 xl:gap-12">
         {/* Navigation */}
         <nav
           id="primary-navigation"
@@ -33,7 +40,7 @@ function Header({ redRoom, setRedRoom }) {
             menuOpen ? "block" : "hidden lg:block"
           }`}
         >
-          <ul className="flex flex-wrap justify-center gap-5 lg:gap-8">
+          <ul className="flex flex-wrap justify-center gap-5 lg:gap-6 xl:gap-8">
             {[
               ["TRAINERS", "#trainers"],
               ["CLASSES", "#classes"],
@@ -53,7 +60,7 @@ function Header({ redRoom, setRedRoom }) {
         </nav>
 
         {/* RED ROOM Toggle */}
-        <div className="flex items-center gap-2 lg:gap-3 mr-4">
+        <div className="flex shrink-0 items-center gap-2 lg:gap-3">
           <label
             htmlFor="red-room-toggle"
             className="cursor-pointer text-[11px] whitespace-nowrap lg:text-xs"
@@ -73,7 +80,7 @@ function Header({ redRoom, setRedRoom }) {
         {/* Mobile Menu Button */}
         <button
           type="button"
-          className="flex h-11 w-8 shrink-0 items-center justify-center text-xl lg:hidden"
+          className="flex h-10 w-8 shrink-0 items-center justify-center text-xl lg:hidden"
           aria-label={menuOpen ? "Close navigation" : "Open navigation"}
           aria-controls="primary-navigation"
           aria-expanded={menuOpen}
@@ -83,13 +90,58 @@ function Header({ redRoom, setRedRoom }) {
         </button>
       </div>
 
-      {/* CTA */}
-      <a
-        href="#classes"
-        className="shrink-0 bg-[#c40000] px-2 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:bg-red-600 sm:px-3 lg:px-8 lg:py-3 lg:text-[13px] lg:tracking-[1px]"
-      >
-        BOOK A CLASS
-      </a>
+      {/* Authentication and booking buttons */}
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-5">
+        {authLoading ? (
+          // Placeholder prevents the authentication button from disappearing
+          // while React restores the user's session from PostgreSQL
+          <>
+            <span
+              className="hidden h-4 w-20 animate-pulse rounded bg-white/10 xl:block"
+              aria-hidden="true"
+            />
+
+            <div
+              className="h-10 w-20 shrink-0 animate-pulse border border-white/20 bg-white/5 sm:w-24 lg:h-11"
+              role="status"
+              aria-label="Checking login status"
+            />
+          </>
+        ) : user ? (
+          <>
+            {/* Show user's name on wider screens */}
+            <span className="hidden max-w-28 truncate text-xs text-white/70 xl:block">
+              {user.name}
+            </span>
+
+            {/* LOG OUT button */}
+            <button
+              type="button"
+              onClick={onLogout}
+              className="shrink-0 border border-white/70 px-3 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:border-[#ff3030] hover:text-[#ff3030] sm:px-4 lg:px-5 lg:py-3 lg:text-xs lg:tracking-[1px]"
+            >
+              LOG OUT
+            </button>
+          </>
+        ) : (
+          /* LOG IN button */
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="shrink-0 border border-white/70 px-3 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:border-[#ff3030] hover:text-[#ff3030] sm:px-4 lg:px-5 lg:py-3 lg:text-xs lg:tracking-[1px]"
+          >
+            LOG IN
+          </button>
+        )}
+
+        {/* BOOK A CLASS button */}
+        <a
+          href="#classes"
+          className="shrink-0 bg-[#c40000] px-2 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:bg-red-600 sm:px-3 lg:px-6 lg:py-3 lg:text-[13px] lg:tracking-[1px]"
+        >
+          BOOK A CLASS
+        </a>
+      </div>
     </header>
   );
 }
