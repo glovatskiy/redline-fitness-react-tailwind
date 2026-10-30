@@ -7,6 +7,10 @@ function Membership({ redRoom }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // STRIPE-CHECKOUT: Track checkout requests and payment errors
+  const [checkoutLoadingId, setCheckoutLoadingId] = useState(null);
+  const [checkoutError, setCheckoutError] = useState("");
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -42,12 +46,66 @@ function Membership({ redRoom }) {
     return () => controller.abort();
   }, []);
 
+  // STRIPE-CHECKOUT: Reset checkout buttons when returning from Stripe
+  // Browser back-forward cache can preserve the "REDIRECTING..." state.
+  useEffect(() => {
+    function handlePageShow() {
+      setCheckoutLoadingId(null);
+    }
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
   function formatPrice(priceCents, currency) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency.toUpperCase(),
       maximumFractionDigits: 0,
     }).format(priceCents / 100);
+  }
+
+  // STRIPE-CHECKOUT: Create a payment session for the selected membership
+  async function handleCheckout(membershipId) {
+    if (checkoutLoadingId !== null) return;
+
+    try {
+      setCheckoutLoadingId(membershipId);
+      setCheckoutError("");
+
+      const response = await fetch(`${API_URL}/api/checkout`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ membershipId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Please log in before purchasing a membership.");
+        }
+
+        throw new Error(data.error || "Unable to start checkout.");
+      }
+
+      if (!data.url) {
+        throw new Error("Stripe Checkout URL was not returned.");
+      }
+
+      // STRIPE-CHECKOUT: Redirect to Stripe's secure hosted payment page
+      window.location.assign(data.url);
+    } catch (err) {
+      console.error("Stripe Checkout failed:", err);
+      setCheckoutError(err.message || "Unable to start checkout.");
+      setCheckoutLoadingId(null);
+    }
   }
 
   return (
@@ -104,6 +162,16 @@ function Membership({ redRoom }) {
           className="py-12 text-center font-body text-sm text-red-400"
         >
           {error}
+        </p>
+      )}
+
+      {/* STRIPE-CHECKOUT: Display payment errors */}
+      {checkoutError && (
+        <p
+          role="alert"
+          className="mb-8 text-center font-body text-sm text-red-400"
+        >
+          {checkoutError}
         </p>
       )}
 
@@ -232,12 +300,17 @@ function Membership({ redRoom }) {
               {/* Plan button */}
               <button
                 type="button"
+                // STRIPE-CHECKOUT: Start checkout for this membership
+                onClick={() => handleCheckout(plan.id)}
+                disabled={checkoutLoadingId !== null}
+                aria-busy={checkoutLoadingId === plan.id}
                 className={`
                   mt-8 w-full cursor-pointer
                   border px-5 py-4
                   font-body text-xs font-bold
                   tracking-[2px]
                   transition-all duration-300
+                  disabled:cursor-not-allowed disabled:opacity-60
                   lg:mt-12 lg:py-5
                   ${
                     plan.featured
@@ -265,7 +338,9 @@ function Membership({ redRoom }) {
                   }
                 `}
               >
-                {plan.buttonText}
+                {checkoutLoadingId === plan.id
+                  ? "REDIRECTING..."
+                  : plan.buttonText}
               </button>
             </article>
           ))}
