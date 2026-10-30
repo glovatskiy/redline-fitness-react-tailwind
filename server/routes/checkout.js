@@ -1,12 +1,57 @@
 const express = require("express");
 const Stripe = require("stripe");
-const { eq, and } = require("drizzle-orm");
+const { eq, and, desc } = require("drizzle-orm");
 
 const { db } = require("../db");
 const { memberships, orders, orderItems } = require("../db/schema");
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// STRIPE-CHECKOUT: GET /api/checkout/my-membership
+// Retrieve the logged-in user's most recent paid membership.
+router.get("/my-membership", async (req, res) => {
+  try {
+    const userId = req.session?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "Please log in to view your membership",
+      });
+    }
+
+    // STRIPE-CHECKOUT: Only retrieve paid orders belonging to this user.
+    const [purchase] = await db
+      .select({
+        orderId: orders.id,
+        membershipName: orderItems.name,
+        paidAt: orders.paidAt,
+      })
+      .from(orders)
+      .innerJoin(orderItems, eq(orderItems.orderId, orders.id))
+      .where(and(eq(orders.userId, userId), eq(orders.status, "paid")))
+      .orderBy(desc(orders.paidAt), desc(orders.id))
+      .limit(1);
+
+    if (!purchase) {
+      return res.json({
+        membershipName: null,
+        orderId: null,
+      });
+    }
+
+    return res.json({
+      membershipName: purchase.membershipName,
+      orderId: purchase.orderId,
+    });
+  } catch (error) {
+    console.error("Membership lookup failed:", error);
+
+    return res.status(500).json({
+      error: "Could not retrieve membership",
+    });
+  }
+});
 
 // STRIPE-CHECKOUT: GET /api/checkout/status?session_id=...
 // Verify the logged-in user's order status from PostgreSQL.
