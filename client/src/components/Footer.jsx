@@ -17,9 +17,10 @@ const socialLinks = [
 ];
 
 const footerLinks = [
-  { name: "TRAINERS", url: "#trainers" },
-  { name: "SCHEDULE", url: "#classes" },
-  { name: "MEMBERSHIP", url: "#membership" },
+  // STRIPE-CHECKOUT: Homepage anchors work from checkout routes
+  { name: "TRAINERS", url: "/#trainers" },
+  { name: "SCHEDULE", url: "/#classes" },
+  { name: "MEMBERSHIP", url: "/#membership" },
 ];
 
 function Footer({ redRoom }) {
@@ -47,8 +48,9 @@ function Footer({ redRoom }) {
       >
         {/* Brand */}
         <div>
+          {/* STRIPE-CHECKOUT: Return to homepage from checkout routes */}
           <a
-            href="#"
+            href="/"
             aria-label="REDLINE Fitness home"
             className="
               inline-flex font-heading
