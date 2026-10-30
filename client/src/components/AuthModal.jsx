@@ -56,6 +56,15 @@ function AuthModal({ onClose, onLogin }) {
       // Update the signed-in user in App.jsx
       onLogin(data.user);
       onClose();
+
+      // STRIPE-CHECKOUT: New accounts should not remain on an
+      // existing checkout confirmation URL from another user.
+      if (
+        mode === "signup" &&
+        window.location.pathname === "/checkout/success"
+      ) {
+        window.location.replace("/");
+      }
     } catch (error) {
       setError(error.message);
     } finally {
