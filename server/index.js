@@ -5,7 +5,7 @@ require("dotenv").config();
 
 // Database connection and schema
 const { db } = require("./db");
-const { classes } = require("./db/schema");
+const { classes, memberships } = require("./db/schema");
 
 // PostgreSQL-backed authentication sessions
 const sessionMiddleware = require("./db/session");
@@ -13,12 +13,13 @@ const sessionMiddleware = require("./db/session");
 // Authentication routes (signup, login, logout)
 const authRoutes = require("./routes/auth");
 
+// STRIPE-CHECKOUT: Import Stripe Checkout routes
+const checkoutRoutes = require("./routes/checkout");
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware: allow requests from the React frontend
-// credentials: true allows the browser to send session cookies
-// Allow requests from local development and the deployed frontend
+// Allow requests from local development and deployed frontend
 app.use(
   cors({
     origin: [
@@ -29,16 +30,21 @@ app.use(
   }),
 );
 
-// Middleware: parse incoming JSON request bodies
+// Parse incoming JSON request bodies
 app.use(express.json());
 
-// Middleware: enable persistent login sessions
+// Enable persistent login sessions
 app.use(sessionMiddleware);
 
-// Authentication API: routes defined in routes/auth.js
+// Authentication API
 app.use("/api/auth", authRoutes);
 
-// Health check: verify that the Express server is running
+// STRIPE-CHECKOUT: Register checkout API routes
+// POST /api/checkout creates a Stripe Checkout session
+// The route requires the user to be logged in
+app.use("/api/checkout", checkoutRoutes);
+
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
@@ -46,24 +52,20 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// GET /api/classes: retrieve fitness classes from Neon PostgreSQL
+// GET /api/classes
 app.get("/api/classes", async (req, res) => {
   try {
-    // Read optional filters from URL query parameters
     const { day, intensity } = req.query;
     const conditions = [];
 
-    // Filter by day (MON or TUE) when provided
     if (day) {
       conditions.push(eq(classes.day, day.toUpperCase()));
     }
 
-    // Filter by intensity unless ALL is selected
     if (intensity && intensity.toUpperCase() !== "ALL") {
       conditions.push(eq(classes.intensity, intensity.toUpperCase()));
     }
 
-    // Query the database and return classes ordered by ID
     const result = await db
       .select()
       .from(classes)
@@ -72,9 +74,21 @@ app.get("/api/classes", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    // Return HTTP 500 if the database query fails
     console.error("Failed to fetch classes:", error);
     res.status(500).json({ error: "Failed to fetch classes" });
+  }
+});
+
+// GET /api/memberships
+// Retrieve membership plans and prices from PostgreSQL
+app.get("/api/memberships", async (req, res) => {
+  try {
+    const result = await db.select().from(memberships).orderBy(memberships.id);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Failed to fetch memberships:", error);
+    res.status(500).json({ error: "Failed to fetch memberships" });
   }
 });
 

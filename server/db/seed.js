@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const { drizzle } = require("drizzle-orm/node-postgres");
 const { Pool } = require("pg");
-const { classes } = require("./schema");
+const { classes, memberships } = require("./schema");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -109,10 +109,61 @@ const classData = [
   },
 ];
 
+const membershipData = [
+  {
+    id: 1,
+    name: "DROP IN",
+    priceCents: 3500,
+    currency: "usd",
+    period: "/class",
+    priceNote: null,
+    features: ["Single class access", "Full amenities", "No commitment"],
+    buttonText: "PURCHASE",
+    featured: false,
+  },
+  {
+    id: 2,
+    name: "REDLINE 8",
+    priceCents: 18000,
+    currency: "usd",
+    period: "/mo",
+    priceNote: "$22.50 PER CLASS",
+    features: [
+      "8 classes per month",
+      "10% off retail",
+      "Priority booking",
+      "Guest pass per month",
+    ],
+    buttonText: "SELECT PLAN",
+    featured: true,
+  },
+  {
+    id: 3,
+    name: "UNLIMITED",
+    priceCents: 28500,
+    currency: "usd",
+    period: "/mo",
+    priceNote: null,
+    features: [
+      "Unlimited classes",
+      "15% off retail",
+      "Redline Recovery access",
+      "Free hand wraps",
+    ],
+    buttonText: "SELECT PLAN",
+    featured: false,
+  },
+];
+
 async function seed() {
   try {
     await db.insert(classes).values(classData).onConflictDoNothing();
-    console.log("Database seeded successfully!");
+
+    console.log("Fitness classes seeded successfully!");
+
+    await db.insert(memberships).values(membershipData).onConflictDoNothing();
+
+    console.log("Membership plans seeded successfully!");
   } catch (error) {
     console.error("Seeding failed:", error);
     process.exitCode = 1;
