@@ -16,6 +16,9 @@ const authRoutes = require("./routes/auth");
 // STRIPE-CHECKOUT: Import Stripe Checkout routes
 const checkoutRoutes = require("./routes/checkout");
 
+// STRIPE-CHECKOUT: Import Stripe payment webhook routes
+const webhookRoutes = require("./routes/webhook");
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -29,6 +32,10 @@ app.use(
     credentials: true,
   }),
 );
+
+// STRIPE-CHECKOUT: Register webhook BEFORE express.json()
+// Stripe requires the original request body to verify signatures
+app.use("/api/stripe/webhook", webhookRoutes);
 
 // Parse incoming JSON request bodies
 app.use(express.json());
