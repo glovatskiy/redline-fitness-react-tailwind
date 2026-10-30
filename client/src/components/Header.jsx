@@ -5,6 +5,7 @@ function Header({
   setRedRoom,
   user,
   authLoading,
+  purchasedMembership,
   onOpenAuth,
   onLogout,
 }) {
@@ -111,10 +112,30 @@ function Header({
           </>
         ) : user ? (
           <>
-            {/* Show user's name on wider screens */}
-            <span className="hidden max-w-28 truncate text-xs text-white/70 xl:block">
-              {user.name}
-            </span>
+            {/* STRIPE-CHECKOUT: Show username and purchased membership */}
+            <div className="hidden max-w-36 min-w-0 flex-col gap-1 xl:flex">
+              <span
+                className="truncate text-xs font-medium text-white/80"
+                title={user.name}
+              >
+                {user.name}
+              </span>
+
+              {purchasedMembership ? (
+                <span
+                  className={`truncate text-[10px] font-semibold tracking-[1px] ${
+                    redRoom ? "text-[#ff4545]" : "text-[#c40000]"
+                  }`}
+                  title={purchasedMembership}
+                >
+                  {purchasedMembership}
+                </span>
+              ) : (
+                <span className="text-[10px] tracking-[0.5px] text-white/40">
+                  NO MEMBERSHIP
+                </span>
+              )}
+            </div>
 
             {/* LOG OUT button */}
             <button

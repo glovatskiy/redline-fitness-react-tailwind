@@ -14,7 +14,13 @@ import Footer from "./components/Footer";
 const API_URL = import.meta.env.VITE_API_URL;
 
 // STRIPE-CHECKOUT: Verify payment status using the backend and PostgreSQL.
-function CheckoutSuccess({ redRoom, user, authLoading, onOpenAuth }) {
+function CheckoutSuccess({
+  redRoom,
+  user,
+  authLoading,
+  onOpenAuth,
+  onPaymentConfirmed,
+}) {
   const sessionId = new URLSearchParams(window.location.search).get(
     "session_id",
   );
@@ -93,6 +99,9 @@ function CheckoutSuccess({ redRoom, user, authLoading, onOpenAuth }) {
             membershipName: data.membershipName,
             error: null,
           });
+
+          // STRIPE-CHECKOUT: Update purchased membership after payment.
+          onPaymentConfirmed?.(data.membershipName);
           return;
         }
 
@@ -147,7 +156,7 @@ function CheckoutSuccess({ redRoom, user, authLoading, onOpenAuth }) {
       controller.abort();
       clearTimeout(timeoutId);
     };
-  }, [sessionId, user, authLoading]);
+  }, [sessionId, user, authLoading, onPaymentConfirmed]);
 
   // STRIPE-CHECKOUT: Messages based on verified payment state.
   const isPaid = payment.status === "paid";
@@ -255,6 +264,9 @@ function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // STRIPE-CHECKOUT: Store the user's latest paid membership.
+  const [purchasedMembership, setPurchasedMembership] = useState(null);
+
   // STRIPE-CHECKOUT: Identify the payment return URL
   const isCheckoutSuccess = window.location.pathname === "/checkout/success";
 
@@ -293,6 +305,50 @@ function App() {
     return () => controller.abort();
   }, []);
 
+  // STRIPE-CHECKOUT: Load the purchased membership after login.
+  useEffect(() => {
+    if (authLoading || !user) {
+      setPurchasedMembership(null);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const loadMembership = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/checkout/my-membership`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not retrieve membership");
+        }
+
+        const data = await response.json();
+
+        if (!controller.signal.aborted) {
+          setPurchasedMembership(data.membershipName ?? null);
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Membership lookup failed:", error);
+        }
+      }
+    };
+
+    loadMembership();
+
+    return () => controller.abort();
+  }, [user, authLoading]);
+
+  // STRIPE-CHECKOUT: Update the header after verified payment.
+  const handlePaymentConfirmed = (membershipName) => {
+    if (membershipName) {
+      setPurchasedMembership(membershipName);
+    }
+  };
+
   // End the login session on the backend
   const handleLogout = async () => {
     try {
@@ -306,6 +362,7 @@ function App() {
       }
 
       setUser(null);
+      setPurchasedMembership(null);
     } catch (error) {
       console.error("Logout failed:", error);
       alert("Could not log out. Please try again.");
@@ -319,6 +376,7 @@ function App() {
         setRedRoom={setRedRoom}
         user={user}
         authLoading={authLoading}
+        purchasedMembership={purchasedMembership}
         onOpenAuth={() => setAuthOpen(true)}
         onLogout={handleLogout}
       />
@@ -330,6 +388,7 @@ function App() {
           user={user}
           authLoading={authLoading}
           onOpenAuth={() => setAuthOpen(true)}
+          onPaymentConfirmed={handlePaymentConfirmed}
         />
       ) : (
         <main>
