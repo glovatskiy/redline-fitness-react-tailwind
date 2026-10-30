@@ -15,8 +15,9 @@ function Header({
   return (
     <header className="fixed top-0 left-0 z-50 flex h-16 w-full items-center justify-between gap-3 bg-[#121212]/95 px-3 text-[#f5f5f1] transition-colors duration-300 lg:h-20 lg:gap-6 lg:px-12">
       {/* Logo */}
+      {/* STRIPE-CHECKOUT: Return to homepage from checkout routes */}
       <a
-        href="#"
+        href="/"
         className="shrink-0 font-heading text-[22px] tracking-[1px] lg:text-4xl lg:tracking-[4px]"
       >
         <span
@@ -42,9 +43,10 @@ function Header({
         >
           <ul className="flex flex-wrap justify-center gap-5 lg:gap-6 xl:gap-8">
             {[
-              ["TRAINERS", "#trainers"],
-              ["CLASSES", "#classes"],
-              ["MEMBERSHIP", "#membership"],
+              // STRIPE-CHECKOUT: Absolute homepage anchors work from checkout routes
+              ["TRAINERS", "/#trainers"],
+              ["CLASSES", "/#classes"],
+              ["MEMBERSHIP", "/#membership"],
             ].map(([label, href]) => (
               <li key={label}>
                 <a
@@ -135,8 +137,9 @@ function Header({
         )}
 
         {/* BOOK A CLASS button */}
+        {/* STRIPE-CHECKOUT: Navigate to classes from any route */}
         <a
-          href="#classes"
+          href="/#classes"
           className="shrink-0 bg-[#c40000] px-2 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:bg-red-600 sm:px-3 lg:px-6 lg:py-3 lg:text-[13px] lg:tracking-[1px]"
         >
           BOOK A CLASS
