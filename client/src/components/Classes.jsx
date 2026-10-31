@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const API_URL = import.meta.env.DEV ? "http://localhost:5001" : "";
+
 const intensityOptions = ["ALL", "BEGINNER", "INTERMEDIATE", "INTENSE"];
 
 function Classes({ redRoom }) {
@@ -19,10 +21,9 @@ function Classes({ redRoom }) {
 
     async function fetchClasses() {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/classes`,
-          { signal: controller.signal },
-        );
+        const response = await fetch(`${API_URL}/api/classes`, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error("Failed to load classes");

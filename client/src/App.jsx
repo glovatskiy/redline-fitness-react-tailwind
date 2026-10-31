@@ -11,7 +11,7 @@ import Membership from "./components/Membership";
 import FindYourRed from "./components/FindYourRed";
 import Footer from "./components/Footer";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.DEV ? "http://localhost:5001" : "";
 
 // STRIPE-CHECKOUT: Verify payment status using the backend and PostgreSQL.
 function CheckoutSuccess({

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+const API_URL = import.meta.env.DEV ? "http://localhost:5001" : "";
 
 function Membership({ redRoom }) {
   const [membershipPlans, setMembershipPlans] = useState([]);
