@@ -38,35 +38,75 @@ function Header({
         {/* Navigation */}
         <nav
           id="primary-navigation"
-          className={`absolute top-full left-0 w-full border-t border-white/10 bg-[#121212]/95 px-5 py-4 lg:static lg:w-auto lg:border-0 lg:bg-transparent lg:p-0 ${
+          aria-label="Primary navigation"
+          className={`absolute top-full left-0 w-full border-t border-white/10 bg-[#121212]/95 px-3 py-5 shadow-xl lg:static lg:w-auto lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none ${
             menuOpen ? "block" : "hidden lg:block"
           }`}
         >
-          <ul className="flex flex-wrap justify-center gap-5 lg:gap-6 xl:gap-8">
+          <ul className="flex flex-nowrap items-center justify-between gap-2 lg:gap-6 xl:gap-8">
             {[
               // STRIPE-CHECKOUT: Absolute homepage anchors work from checkout routes
               ["TRAINERS", "/#trainers"],
               ["CLASSES", "/#classes"],
               ["MEMBERSHIP", "/#membership"],
             ].map(([label, href]) => (
-              <li key={label}>
+              <li key={label} className="shrink-0">
                 <a
                   href={href}
                   onClick={closeMenu}
-                  className="text-xs tracking-[2px] transition-colors duration-300 hover:text-[#c40000] lg:text-sm"
+                  className="text-[10px] tracking-[1px] transition-colors duration-300 hover:text-[#c40000] sm:text-xs sm:tracking-[2px] lg:text-sm"
                 >
                   {label}
                 </a>
               </li>
             ))}
           </ul>
+
+          {/* Mobile user information */}
+          <div className="mt-5 border-t border-white/10 pt-4 lg:hidden">
+            {authLoading ? (
+              <div
+                className="h-8 w-32 animate-pulse rounded bg-white/10"
+                role="status"
+                aria-label="Checking login status"
+              />
+            ) : user ? (
+              <div className="flex min-w-0 flex-col items-center gap-1 text-center">
+                <span
+                  className="max-w-full truncate text-sm font-medium text-white/90"
+                  title={user.name}
+                >
+                  {user.name}
+                </span>
+
+                {purchasedMembership ? (
+                  <span
+                    className={`max-w-full truncate text-xs font-semibold tracking-[1px] ${
+                      redRoom ? "text-[#ff4545]" : "text-[#c40000]"
+                    }`}
+                    title={purchasedMembership}
+                  >
+                    {purchasedMembership}
+                  </span>
+                ) : (
+                  <span className="text-[11px] tracking-[0.5px] text-white/40">
+                    NO MEMBERSHIP
+                  </span>
+                )}
+              </div>
+            ) : (
+              <p className="text-center text-xs text-white/50">
+                Log in to view your membership
+              </p>
+            )}
+          </div>
         </nav>
 
         {/* RED ROOM Toggle */}
         <div className="flex shrink-0 items-center gap-2 lg:gap-3">
           <label
             htmlFor="red-room-toggle"
-            className="cursor-pointer text-[11px] whitespace-nowrap lg:text-xs"
+            className="hidden cursor-pointer text-[11px] whitespace-nowrap lg:inline lg:text-xs"
           >
             RED ROOM
           </label>
@@ -76,6 +116,7 @@ function Header({
             type="checkbox"
             checked={redRoom}
             onChange={(event) => setRedRoom(event.target.checked)}
+            aria-label="Red Room mode"
             className="relative h-5 w-10 shrink-0 cursor-pointer appearance-none rounded-full bg-white/10 transition-colors duration-300 before:absolute before:top-1 before:left-1 before:h-3 before:w-3 before:rounded-full before:bg-[#a0a0a0] before:transition-transform before:duration-300 checked:bg-red-900/40 checked:before:translate-x-5 checked:before:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
           />
         </div>
@@ -140,7 +181,10 @@ function Header({
             {/* LOG OUT button */}
             <button
               type="button"
-              onClick={onLogout}
+              onClick={() => {
+                closeMenu();
+                onLogout();
+              }}
               className="shrink-0 border border-white/70 px-3 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:border-[#ff3030] hover:text-[#ff3030] sm:px-4 lg:px-5 lg:py-3 lg:text-xs lg:tracking-[1px]"
             >
               LOG OUT
@@ -150,7 +194,10 @@ function Header({
           /* LOG IN button */
           <button
             type="button"
-            onClick={onOpenAuth}
+            onClick={() => {
+              closeMenu();
+              onOpenAuth();
+            }}
             className="shrink-0 border border-white/70 px-3 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300 hover:border-[#ff3030] hover:text-[#ff3030] sm:px-4 lg:px-5 lg:py-3 lg:text-xs lg:tracking-[1px]"
           >
             LOG IN
